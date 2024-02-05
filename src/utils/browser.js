@@ -17,34 +17,7 @@ import {
   rename,
   unlink,
 } from "node:fs/promises";
-// import {
-//   __filename,
-//   __dirname,
-//   getParam,
-//   getText,
-//   getInput,
-//   getAction,
-  
-//   exit,
-//   getHomeDir,
-//   // getWorkingDir,
-//   showWorkingDir,
-//   showHomeDir,
-//   setDir,
-//   setParentDir,
-//   list,
-//   content,
-//   createFile,
-//   renameFile,
-//   copyFile,
-//   moveFile,
-//   deleteFile,
-//   getOS,
-//   getHash,
-//   compress,
-//   decompress,
 
-// } from "./basic.js";
 const getParam = (name) => {
   const mask = `--${name}=`;
   const value = process.argv.filter((arg) => arg.startsWith(mask)).pop();
@@ -79,12 +52,12 @@ const setParentDir = () => {
   const dir = getWorkingDir();
   const dirPath = parse(dir).dir;
   setDir(dirPath);
-  // console.log('>>>>', process.cwd(), '|', dirPath);
 };
 
 class Browser {
   constructor() {
     this.username = getParam('username') || 'username';
+    this.defaultError = 'Operation failed:';
     this.allowedActions = [
       ['.exit', 'finish'],
       ['up'],
@@ -122,7 +95,7 @@ class Browser {
       .then(async ([command, params]) => await command(params))
       .finally(() => this.showPath());
     } catch(err) {
-      console.log('$$$', err);
+      console.log(err);
     }
   }
 
@@ -150,14 +123,14 @@ class Browser {
     try {
       setParentDir();
     } catch (error) {
-      console.log(`Error: ${error.message.replace('ENOENT:', '')}`);
+      console.log(`${this.defaultError} ${error.message.replace('ENOENT:', '')}`);
     }
   }
   cd = ([dir]) => {
     try {
       setDir(dir);
     } catch (error) {
-      console.log(`Error: ${error.message.replace('ENOENT:', '')}`);
+      console.log(`${this.defaultError} ${error.message.replace('ENOENT:', '')}`);
     }  
   }
   ls = () => {
@@ -179,7 +152,7 @@ class Browser {
       await finished(stream);
       console.log(os.EOL);
     } catch (error) {
-      console.log(`Error: ${error.message.replace('ENOENT:', '')}`);
+      console.log(`${this.defaultError} ${error.message.replace('ENOENT:', '')}`);
     }
   }
   add = async ([fileName]) => {
@@ -188,7 +161,7 @@ class Browser {
       const stream = new WriteStream(file, { encoding: 'utf-8' });
       stream.close();
     } catch (error) {
-      console.log(`Error: ${error.message.replace('ENOENT:', '')}`);
+      console.log(`${this.defaultError} ${error.message.replace('ENOENT:', '')}`);
     }
   }
   rn = async ([oldFileName, newFileName]) => {
@@ -197,7 +170,7 @@ class Browser {
       const newFile = getFilePath(newFileName);
       await rename(oldFile, newFile);
     } catch (error) {
-      console.log(`Error: ${error.message.replace('ENOENT:', '')}`);
+      console.log(`${this.defaultError} ${error.message.replace('ENOENT:', '')}`);
     }
   }
   cp =  async ([fromFileName, toFileName]) => {
@@ -209,7 +182,7 @@ class Browser {
       readStream.pipe(writeStream);
       await finished(readStream, writeStream)
     } catch (error) {
-      console.log(`Error: ${error.message.replace('ENOENT:', '')}`);
+      console.log(`${this.defaultError} ${error.message.replace('ENOENT:', '')}`);
     }
   }
   mv = async ([fromFileName, toFileName]) => {
@@ -222,7 +195,7 @@ class Browser {
       await finished(readStream, writeStream);
       if (fromFileName !== toFileName) await unlink(fromFileName);
     } catch (error) {
-      console.log(`Error: ${error.message.replace('ENOENT:', '')}`);
+      console.log(`${this.defaultError} ${error.message.replace('ENOENT:', '')}`);
     }
   }
   rm = async([fileName]) => {
@@ -230,7 +203,7 @@ class Browser {
       const file = getFilePath(fileName);
       await unlink(file);
     } catch (error) {
-      console.log(`Error: ${error.message.replace('ENOENT:', '')}`);
+      console.log(`${this.defaultError} ${error.message.replace('ENOENT:', '')}`);
     }
   }
   os = ([param]) => {
@@ -246,7 +219,7 @@ class Browser {
       const context = details.hasOwnProperty(param) ? param : 'unknown';
       console.log(details[context]);
     } catch (error) {
-      console.log(`Error: ${error.message.replace('ENOENT:', '')}`);
+      console.log(`${this.defaultError} ${error.message.replace('ENOENT:', '')}`);
     }
   }
   hash = async ([fileName]) => {
@@ -258,7 +231,7 @@ class Browser {
       stream.on('end', () => console.log(hash.digest('hex')));
       await finished(stream);
     } catch (error) {
-      console.log(`Error: ${error.message.replace('ENOENT:', '')}`);
+      console.log(`${this.defaultError} ${error.message.replace('ENOENT:', '')}`);
     }
   }
   compress = async ([fromFileName, toFilePath]) => {
@@ -270,7 +243,7 @@ class Browser {
       const brotli = createBrotliCompress()
       await pipeline(source, brotli, destination);
     } catch (error) {
-      console.log(`Error: ${error.message.replace('ENOENT:', '')}`);
+      console.log(`${this.defaultError} ${error.message.replace('ENOENT:', '')}`);
     }
   }
   decompress = async ([fromFileName, toFilePath]) => {
@@ -283,7 +256,7 @@ class Browser {
       await pipeline(source, brotli, destination);
 
     } catch (error) {
-      console.log(`Error: ${error.message.replace('ENOENT:', '')}`);
+      console.log(`${this.defaultError} ${error.message.replace('ENOENT:', '')}`);
     }
   }
 };
